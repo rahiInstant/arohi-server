@@ -49,6 +49,24 @@ async function run() {
       res.send(result);
       console.log(result);
     });
+    app.get("/spot/:mail", async (req, res) => {
+      const email = req.params.mail;
+      const query = { userEmail: email };
+      const option = {
+        projection: {
+          spot: 1,
+          time: 1,
+          cost: 1,
+          visitor: 1,
+          season: 1,
+          photo: 1,
+        },
+      };
+      const spotCollection = touristDB.find(query, option);
+      const result = await spotCollection.toArray();
+      res.send(result);
+      console.log(result);
+    });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
     );
