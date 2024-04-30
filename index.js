@@ -50,25 +50,37 @@ async function run() {
       console.log(result);
     });
     app.put("/spot/:id", async (req, res) => {
-      const data = req.body
-      const id = req.params.id
+      const data = req.body;
+      const id = req.params.id;
       const updateDoc = {
-        $set:{
-          country:data.country,
-          spot:data.spot,
+        $set: {
+          country: data.country,
+          spot: data.spot,
           time: data.time,
           visitor: data.visitor,
-          photo:data.photo,
-          location:data.location,
+          photo: data.photo,
+          location: data.location,
           cost: data.cost,
-          season:data.season,
-          comment:data.comment,
-        }
-      }
-      const option = {upsert:true}
-      const query = {_id: new ObjectId(id)}
-      const result = await touristDB.updateOne(query,updateDoc,option)
-      res.send(result)
+          season: data.season,
+          comment: data.comment,
+        },
+      };
+      const option = { upsert: true };
+      const query = { _id: new ObjectId(id) };
+      const result = await touristDB.updateOne(query, updateDoc, option);
+      res.send(result);
+    });
+    app.get("/home-card", async (req, res) => {
+      const query = {};
+      const option = {
+        projection: {
+          spot: 1,
+          photo: 1,
+        },
+      };
+      const spotCollection = touristDB.find(query, option);
+      const result = await spotCollection.toArray();
+      res.send(result);
     });
     app.get("/spot", async (req, res) => {
       const query = {};
