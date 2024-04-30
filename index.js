@@ -24,8 +24,22 @@ async function run() {
     await client.connect();
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
-    const touristDB = client.db("tourist").collection("spot");
+    const touristDB = client.db("tourist");
+    const spotCollection = touristDB.collection("spot");
+    const countryCollection = touristDB.collection("Country");
     // const countryCollection = touristDB.collection("country");
+    app.get('/specific/:name', async (req, res) => {
+      const name = req.params.name;
+      const query = { country: name };
+      const collection = spotCollection.find(query);
+      const result = await collection.toArray();
+      res.send(result);
+    })
+    app.get("/country", async (req, res) => {
+      const response = countryCollection.find();
+      const result = await response.toArray();
+      res.send(result);
+    });
     app.get("/spot/:mail", async (req, res) => {
       const email = req.params.mail;
       const query = { userEmail: email };
@@ -34,20 +48,18 @@ async function run() {
           country: 1,
           spot: 1,
           location: 1,
-          cost: 1,
+          cost: 1, 
         },
       };
-      const spotCollection = touristDB.find(query, option);
-      const result = await spotCollection.toArray();
+      const collection = spotCollection.find(query, option);
+      const result = await collection.toArray();
       res.send(result);
-      // console.log(result);
     });
     app.get("/card/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
-      const result = await touristDB.findOne(query);
+      const result = await spotCollection.findOne(query);
       res.send(result);
-      console.log(result);
     });
     app.put("/spot/:id", async (req, res) => {
       const data = req.body;
@@ -67,7 +79,7 @@ async function run() {
       };
       const option = { upsert: true };
       const query = { _id: new ObjectId(id) };
-      const result = await touristDB.updateOne(query, updateDoc, option);
+      const result = await spotCollection.updateOne(query, updateDoc, option);
       res.send(result);
     });
     app.get("/home-card", async (req, res) => {
@@ -78,10 +90,16 @@ async function run() {
           photo: 1,
         },
       };
-      const spotCollection = touristDB.find(query, option);
-      const result = await spotCollection.toArray();
+      const spots = spotCollection.find(query, option);
+      const result = await spots.toArray();
       res.send(result);
     });
+    // app.get('/single-spot/:id', async (req, res) => {
+    //   const id = req.params.id
+    //   const query = { _id: new ObjectId(id) };
+    //   const result = await touristDB.findOne(query)
+    //   res.send(result)
+    // })
     app.get("/spot", async (req, res) => {
       const query = {};
       const option = {
@@ -94,14 +112,14 @@ async function run() {
           photo: 1,
         },
       };
-      const spotCollection = touristDB.find(query, option);
-      const result = await spotCollection.toArray();
+      const collection = spotCollection.find(query, option);
+      const result = await collection.toArray();
       res.send(result);
     });
 
     app.post("/spot", async (req, res) => {
       const data = req.body;
-      const result = await touristDB.insertOne(data);
+      const result = await spotCollection.insertOne(data);
       res.send(result);
       // console.log(data)
     });
@@ -109,7 +127,7 @@ async function run() {
     app.delete("/spot/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
-      const result = await touristDB.deleteOne(query);
+      const result = await spotCollection.deleteOne(query);
       res.send({ ...result, id });
     });
 
